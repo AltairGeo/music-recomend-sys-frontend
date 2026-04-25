@@ -1,5 +1,12 @@
 import { AppShell, Burger, Group, NavLink, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import {
+  HouseLineIcon,
+  ListBulletsIcon,
+  MagnifyingGlassIcon,
+  UploadIcon,
+} from "@phosphor-icons/react/dist/ssr";
+import { Link } from "react-router";
 function App({ children }: { children: React.ReactNode }) {
   const [opened, { toggle }] = useDisclosure();
 
@@ -22,7 +29,32 @@ function App({ children }: { children: React.ReactNode }) {
         </AppShell.Header>
 
         <AppShell.Navbar p="md">
-          <NavLink />
+          <NavLink
+            component={Link}
+            to="/"
+            label="Главная"
+            leftSection={<HouseLineIcon size={20} weight="bold" />}
+          />
+          <NavLink
+            component={Link}
+            to="/search"
+            label="Поиск"
+            leftSection={<MagnifyingGlassIcon size={20} weight="bold" />}
+          />
+
+          <NavLink
+            component={Link}
+            to="/tracks"
+            label="Треки"
+            leftSection={<ListBulletsIcon size={20} weight="bold" />}
+          />
+
+          <NavLink
+            component={Link}
+            to="/upload"
+            label="Загрузить"
+            leftSection={<UploadIcon size={20} weight="bold" />}
+          />
         </AppShell.Navbar>
 
         <AppShell.Main>{children}</AppShell.Main>
