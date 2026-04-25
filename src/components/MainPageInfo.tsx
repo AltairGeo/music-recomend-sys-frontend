@@ -7,8 +7,31 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { TrackCard } from "./Track";
+import { TrackAPI } from "../features/Track/api";
+import { useEffect, useState } from "react";
+import type { TrackModel } from "../features/Track/model";
 
 export function MainInfo() {
+  const [track, setTrack] = useState<TrackModel | null>(null);
+  const [, setLoading] = useState(true);
+
+  const track_api: TrackAPI = new TrackAPI();
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await track_api.getRandomTrack(1);
+        setTrack(res.tracks?.[0] ?? null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
   return (
     <>
       <Container size="md" py="xl">
@@ -52,6 +75,13 @@ export function MainInfo() {
           </Stack>
         </Card>
         <br />
+
+        {track && (
+          <>
+            <TrackCard track={track} /> <br />
+          </>
+        )}
+
         <Card withBorder radius="md" p="lg">
           <Stack gap="sm">
             <Title order={2} id="usefull_links">
@@ -72,7 +102,9 @@ export function MainInfo() {
                 Github проекта(Бэкенд часть)
               </Anchor>
 
-              <Anchor>Github проекта(Фронтенд часть)</Anchor>
+              <Anchor href="https://github.com/AltairGeo/music-recomend-sys-frontend">
+                Github проекта(Фронтенд часть)
+              </Anchor>
             </Stack>
           </Stack>
         </Card>
