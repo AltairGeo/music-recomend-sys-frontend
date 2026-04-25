@@ -24,3 +24,5 @@ export class TrackAPI extends API {
     );
   }
 }
+
+export const track_api = new TrackAPI();
