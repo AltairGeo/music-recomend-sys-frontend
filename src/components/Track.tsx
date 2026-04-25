@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { config } from "../config";
 import { Link } from "react-router";
-import { IconVolume } from "@tabler/icons-react";
+import { SpeakerHighIcon } from "@phosphor-icons/react/dist/ssr";
 
 export interface TrackCardModel {
   id: number;
@@ -96,7 +96,16 @@ export function TrackCard({ track }: TrackProps) {
   };
 
   return (
-    <Card withBorder radius="md" p="md" shadow="sm">
+    <Card
+      withBorder
+      radius="md"
+      p="md"
+      shadow="sm"
+      style={{
+        background: "linear-gradient(145deg, #1b1b1b, #141414)",
+        borderColor: "#2a2a2a",
+      }}
+    >
       <Group align="flex-start" justify="space-between">
         {/* Info */}
         <Stack gap={4} style={{ flex: 1 }}>
@@ -149,7 +158,7 @@ export function TrackCard({ track }: TrackProps) {
 
         {/* Volume */}
         <Stack align="center" gap={4}>
-          <IconVolume size={20} />
+          <SpeakerHighIcon size={20} weight="bold" />
 
           <Slider
             orientation="vertical"

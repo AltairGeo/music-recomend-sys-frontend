@@ -7,10 +7,10 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { TrackCard } from "./Track";
 import { TrackAPI } from "../features/Track/api";
 import { useEffect, useState } from "react";
 import type { TrackModel } from "../features/Track/model";
+import { RandomTrackWidget } from "./RandomTrack";
 
 export function MainInfo() {
   const [track, setTrack] = useState<TrackModel | null>(null);
@@ -78,7 +78,8 @@ export function MainInfo() {
 
         {track && (
           <>
-            <TrackCard track={track} /> <br />
+            <RandomTrackWidget />
+            <br />
           </>
         )}
 

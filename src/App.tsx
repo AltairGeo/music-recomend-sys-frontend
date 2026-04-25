@@ -1,4 +1,4 @@
-import { AppShell, Burger, Group, Text } from "@mantine/core";
+import { AppShell, Burger, Group, NavLink, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 function App({ children }: { children: React.ReactNode }) {
   const [opened, { toggle }] = useDisclosure();
@@ -21,7 +21,9 @@ function App({ children }: { children: React.ReactNode }) {
           </Group>
         </AppShell.Header>
 
-        <AppShell.Navbar p="md">Sidebar</AppShell.Navbar>
+        <AppShell.Navbar p="md">
+          <NavLink />
+        </AppShell.Navbar>
 
         <AppShell.Main>{children}</AppShell.Main>
       </AppShell>
