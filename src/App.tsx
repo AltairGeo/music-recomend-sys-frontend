@@ -23,7 +23,7 @@ function App() {
 
         <AppShell.Navbar p="md">Sidebar</AppShell.Navbar>
 
-        <AppShell.Main>Content</AppShell.Main>
+        <AppShell.Main></AppShell.Main>
       </AppShell>
     </>
   );

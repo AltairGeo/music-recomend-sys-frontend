@@ -4,13 +4,20 @@ import "./index.css";
 import App from "./App.tsx";
 import "@mantine/core/styles.css";
 import { createTheme, MantineProvider } from "@mantine/core";
+import { BrowserRouter } from "react-router";
+import { Routes } from "react-router";
+import { Route } from "react-router";
 
 const theme = createTheme({});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="dark">
-      <App />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />} />
+        </Routes>
+      </BrowserRouter>
     </MantineProvider>
   </StrictMode>,
 );
