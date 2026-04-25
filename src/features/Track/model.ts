@@ -14,3 +14,10 @@ export interface ListTracksResponseAPI {
   tracks: TrackModel[];
   total: number;
 }
+
+export interface ListTracksPaginationResponseAPI {
+  items: TrackModel[];
+  count: number;
+  skip: number;
+  limit: number;
+}
