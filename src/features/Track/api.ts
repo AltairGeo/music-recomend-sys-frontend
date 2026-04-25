@@ -3,46 +3,24 @@ import type {
   ListTracksPaginationResponseAPI,
 } from "./model";
 import { config } from "../../config";
+import { API } from "../../share/api";
 
-export class TrackAPI {
-  async getTracks(
-    skip: number,
-    limit: number,
-  ): Promise<ListTracksPaginationResponseAPI> {
-    const url = `${config.api.baseUrl}/api/v1/tracks?skip=${skip}&limit=${limit}`;
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tracks: ${res.status}`);
-    }
-
-    const data: ListTracksPaginationResponseAPI = await res.json();
-    return data;
+export class TrackAPI extends API {
+  async getTracks(skip: number, limit: number) {
+    return this.request<ListTracksPaginationResponseAPI>(
+      `${config.api.baseUrl}/api/v1/tracks?skip=${skip}&limit=${limit}`,
+    );
   }
 
-  async searchTracks(query: string): Promise<ListTracksResponseAPI> {
-    const url = `${config.api.baseUrl}/api/v1/tracks/search?q=${query}`;
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tracks: ${res.status}`);
-    }
-
-    const data: ListTracksResponseAPI = await res.json();
-    return data;
+  async searchTracks(query: string) {
+    return this.request<ListTracksResponseAPI>(
+      `${config.api.baseUrl}/api/v1/tracks/search?q=${query}`,
+    );
   }
 
-  async getRandomTrack(n: number): Promise<ListTracksResponseAPI> {
-    const url = `${config.api.baseUrl}/api/v1/tracks/random?n=${n}`;
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tracks: ${res.status}`);
-    }
-
-    const data: ListTracksResponseAPI = await res.json();
-    return data;
+  async getRandomTrack(n: number) {
+    return this.request<ListTracksResponseAPI>(
+      `${config.api.baseUrl}/api/v1/tracks/random?n=${n}`,
+    );
   }
 }
