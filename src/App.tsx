@@ -1,6 +1,6 @@
 import { AppShell, Burger, Group, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-function App() {
+function App({ children }: { children: React.ReactNode }) {
   const [opened, { toggle }] = useDisclosure();
 
   return (
@@ -9,7 +9,7 @@ function App() {
         padding="md"
         header={{ height: 60 }}
         navbar={{
-          width: 300,
+          width: 200,
           breakpoint: "sm",
           collapsed: { mobile: !opened },
         }}
@@ -23,7 +23,7 @@ function App() {
 
         <AppShell.Navbar p="md">Sidebar</AppShell.Navbar>
 
-        <AppShell.Main></AppShell.Main>
+        <AppShell.Main>{children}</AppShell.Main>
       </AppShell>
     </>
   );

@@ -7,6 +7,7 @@ import { createTheme, MantineProvider } from "@mantine/core";
 import { BrowserRouter } from "react-router";
 import { Routes } from "react-router";
 import { Route } from "react-router";
+import { MainInfo } from "./components/MainPageInfo.tsx";
 
 const theme = createTheme({});
 
@@ -15,7 +16,14 @@ createRoot(document.getElementById("root")!).render(
     <MantineProvider theme={theme} defaultColorScheme="dark">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />} />
+          <Route
+            path="/"
+            element={
+              <App>
+                <MainInfo />
+              </App>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </MantineProvider>
