@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router";
 import { Routes } from "react-router";
 import { Route } from "react-router";
 import { MainInfo } from "./components/MainPageInfo.tsx";
+import { SearchPage } from "./pages/Search.tsx";
 
 const theme = createTheme({});
 
@@ -19,6 +20,14 @@ createRoot(document.getElementById("root")!).render(
           element={
             <App>
               <MainInfo />
+            </App>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <App>
+              <SearchPage />
             </App>
           }
         />
