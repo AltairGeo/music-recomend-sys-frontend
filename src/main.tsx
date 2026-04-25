@@ -9,6 +9,7 @@ import { Route } from "react-router";
 import { MainInfo } from "./components/MainPageInfo.tsx";
 import { SearchPage } from "./pages/Search.tsx";
 import { TracksPage } from "./pages/TracksList/tracks.tsx";
+import { TrackPage } from "./pages/Track/track.tsx";
 
 const theme = createTheme({});
 
@@ -37,6 +38,14 @@ createRoot(document.getElementById("root")!).render(
           element={
             <App>
               <TracksPage />
+            </App>
+          }
+        />
+        <Route
+          path="/tracks/:track_id"
+          element={
+            <App>
+              <TrackPage />
             </App>
           }
         />
