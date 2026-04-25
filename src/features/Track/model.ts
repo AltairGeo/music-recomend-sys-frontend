@@ -1,4 +1,4 @@
-export interface TrackData {
+export interface TrackModel {
   id: number;
   title: string;
   artist: string;
@@ -8,4 +8,9 @@ export interface TrackData {
   additional_info: string;
   license: string;
   audio_url: string;
+}
+
+export interface RandomTracksResponseAPI {
+  tracks: TrackModel[];
+  total: number;
 }
