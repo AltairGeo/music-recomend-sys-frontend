@@ -10,7 +10,7 @@ export interface TrackModel {
   audio_url: string;
 }
 
-export interface RandomTracksResponseAPI {
+export interface ListTracksResponseAPI {
   tracks: TrackModel[];
   total: number;
 }
