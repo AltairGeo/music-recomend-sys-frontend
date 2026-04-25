@@ -21,3 +21,12 @@ export interface ListTracksPaginationResponseAPI {
   skip: number;
   limit: number;
 }
+
+export interface SimilarTrack {
+  track: TrackModel;
+  score: number;
+}
+
+export interface SimilarTracksResponseAPI {
+  tracks: SimilarTrack[];
+}
