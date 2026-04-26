@@ -72,6 +72,9 @@ export function AudioPlayer({ src }: { src: string }) {
         onChange={seek}
         max={duration || 1}
         style={{ flex: 1 }}
+        label={(v) => {
+          return Math.ceil(v);
+        }}
       />
 
       {/* time */}
