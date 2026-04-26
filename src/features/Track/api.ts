@@ -39,6 +39,24 @@ export class TrackAPI extends API {
       `${config.api.baseUrl}/api/v1/tracks/${trackId}`,
     );
   }
+
+  async uploadTrack(file: File): Promise<SimilarTracksResponseAPI> {
+    const form = new FormData();
+    form.append("file", file);
+
+    const resp = await fetch(`${config.api.baseUrl}/api/v1/tracks/`, {
+      method: "POST",
+      body: form,
+    });
+
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+
+    const data: SimilarTracksResponseAPI = await resp.json();
+
+    return data;
+  }
 }
 
 export const track_api = new TrackAPI();

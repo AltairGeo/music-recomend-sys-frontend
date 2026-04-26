@@ -10,6 +10,7 @@ import { MainInfo } from "./components/MainPageInfo.tsx";
 import { SearchPage } from "./pages/Search.tsx";
 import { TracksPage } from "./pages/TracksList/tracks.tsx";
 import { TrackPage } from "./pages/Track/track.tsx";
+import { UploadPage } from "./pages/Upload/upload.tsx";
 
 const theme = createTheme({});
 
@@ -46,6 +47,14 @@ createRoot(document.getElementById("root")!).render(
           element={
             <App>
               <TrackPage />
+            </App>
+          }
+        />
+        <Route
+          path="/upload"
+          element={
+            <App>
+              <UploadPage />
             </App>
           }
         />
