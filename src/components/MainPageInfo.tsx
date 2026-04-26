@@ -62,7 +62,7 @@ export function MainInfo() {
             <Title order={2}>Вы можете:</Title>
 
             <List spacing="xs">
-              <List.Item>Поиск по нашей базе треков</List.Item>
+              <List.Item>Искать по нашей базе треков</List.Item>
               <List.Item>Получать список схожих аудиозаписей</List.Item>
               <List.Item>Cлушать превью треков</List.Item>
               <List.Item>
