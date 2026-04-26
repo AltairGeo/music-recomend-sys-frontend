@@ -93,7 +93,9 @@ export function MainInfo() {
                 Проект (Google Docs)
               </Anchor>
 
-              <Anchor>Проект (PDF)</Anchor>
+              <Anchor href="https://pub.files.delroms.ru/others/IndividualProject.pdf">
+                Проект (PDF)
+              </Anchor>
 
               <Anchor href="https://arxiv.org/abs/1612.01840">
                 FMA датасет
