@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Card,
   Stack,
@@ -21,7 +21,7 @@ export function RandomTrackWidget() {
   const [track, setTrack] = useState<TrackCardModel | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const api = new TrackAPI();
+  const api = useMemo(() => new TrackAPI(), []);
 
   const fetchTrack = async () => {
     setLoading(true);
@@ -43,7 +43,6 @@ export function RandomTrackWidget() {
   return (
     <Card withBorder radius="lg" p="lg" shadow="sm">
       <Stack gap="md">
-        {/* Header */}
         <Group justify="space-between">
           <Group gap="sm">
             <ThemeIcon variant="light" size="md">
@@ -66,14 +65,13 @@ export function RandomTrackWidget() {
           </Button>
         </Group>
 
-        {/* Content */}
         {loading && (
           <Group justify="center" py="xl">
             <Loader size="sm" />
           </Group>
         )}
 
-        {!loading && track && <TrackCard track={track} />}
+        {!loading && track && <TrackCard key={track.id} track={track} />}
 
         {!loading && !track && (
           <Text size="sm" c="dimmed" ta="center">

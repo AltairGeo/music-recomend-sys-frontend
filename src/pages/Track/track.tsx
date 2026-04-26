@@ -20,11 +20,10 @@ import type { SimilarTrack, TrackModel } from "../../features/Track/model";
 
 import { TrackCard } from "../../components/Track";
 import { AudioPlayer } from "./audioPlayer";
+import { config } from "../../config";
 
 function getAudioSrc(url: string) {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;
-  return `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}${url}`;
+  return `${config.api.baseUrl}${url}`;
 }
 
 export function TrackPage() {
@@ -93,7 +92,7 @@ export function TrackPage() {
             <Title order={2}>Error</Title>
             <Text c="red">{error}</Text>
             <Anchor component={Link} to="/tracks">
-              Back to tracks
+              К трекам
             </Anchor>
           </Stack>
         </Paper>
@@ -155,14 +154,14 @@ export function TrackPage() {
         {/* SIMILAR TRACKS */}
         <Stack gap="sm">
           <Group justify="space-between">
-            <Title order={2}>Similar tracks</Title>
+            <Title order={2}>Похожие треки</Title>
             <Text c="dimmed" size="sm">
-              {similar.length} found
+              Найдено треков - {similar.length}
             </Text>
           </Group>
 
           {similar.length === 0 ? (
-            <Text c="dimmed">No similar tracks found</Text>
+            <Text c="dimmed">Похожих треков не найдено</Text>
           ) : (
             <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 3 }} spacing="md">
               {similar.map(({ track }) => (

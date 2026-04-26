@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   Text,
@@ -26,38 +26,87 @@ interface TrackProps {
 }
 
 export function TrackCard({ track }: TrackProps) {
+  console.log("TrackCard render", track.id);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const seekingRef = useRef(false);
+
+  const audioSrc = useMemo(
+    () => `${config.api.baseUrl}${track.audio_url}`,
+    [track.audio_url],
+  );
 
   const [playing, setPlaying] = useState(false);
-
-  const [volume, setVolume] = useState(10);
+  const [volume, setVolume] = useState(30);
 
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
+  const [draftCurrent, setDraftCurrent] = useState<number | null>(null);
 
-  // volume sync
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
-    }
-  }, [volume]);
-
-  // audio listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onLoaded = () => setDuration(audio.duration);
-    const onTime = () => setCurrent(audio.currentTime);
-    const onEnd = () => setPlaying(false);
+    audio.volume = volume / 100;
+  }, [volume]);
+
+  useEffect(() => {
+    console.log("TrackCard mounted", track.id);
+    return () => console.log("TrackCard unmounted", track.id);
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onLoaded = () => {
+      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+    };
+
+    const onTime = () => {
+      if (!seekingRef.current && !audio.seeking) {
+        console.log("timeupdate", audio.currentTime);
+        setCurrent(audio.currentTime);
+      }
+    };
+
+    const onSeeking = () => {
+      seekingRef.current = true;
+    };
+
+    const onSeeked = () => {
+      seekingRef.current = false;
+      setCurrent(audio.currentTime);
+      setDraftCurrent(null);
+    };
+
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+
+    const onEnd = () => {
+      seekingRef.current = false;
+      setPlaying(false);
+      setCurrent(0);
+      setDraftCurrent(null);
+    };
 
     audio.addEventListener("loadedmetadata", onLoaded);
+    audio.addEventListener("durationchange", onLoaded);
     audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("seeking", onSeeking);
+    audio.addEventListener("seeked", onSeeked);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
     audio.addEventListener("ended", onEnd);
 
     return () => {
       audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("durationchange", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("seeking", onSeeking);
+      audio.removeEventListener("seeked", onSeeked);
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnd);
     };
   }, []);
@@ -67,13 +116,11 @@ export function TrackCard({ track }: TrackProps) {
     if (!audio) return;
 
     try {
-      if (!playing) {
+      if (audio.paused) {
         audio.volume = volume / 100;
         await audio.play();
-        setPlaying(true);
       } else {
         audio.pause();
-        setPlaying(false);
       }
     } catch (e) {
       console.error("Audio play error:", e);
@@ -81,9 +128,33 @@ export function TrackCard({ track }: TrackProps) {
   };
 
   const handleSeek = (value: number) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = value;
-    setCurrent(value);
+    seekingRef.current = true;
+    setDraftCurrent(value);
+  };
+
+  const handleSeekEnd = (value: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    console.log("SEEK start", value, "before:", audio.currentTime);
+
+    const doSeek = () => {
+      audio.currentTime = value;
+
+      console.log("SEEK applied", {
+        wanted: value,
+        actual: audio.currentTime,
+      });
+
+      setCurrent(value);
+      setDraftCurrent(null);
+    };
+
+    if (audio.readyState >= 1) {
+      doSeek();
+    } else {
+      audio.addEventListener("loadedmetadata", doSeek, { once: true });
+    }
   };
 
   const formatTime = (t: number) => {
@@ -94,6 +165,8 @@ export function TrackCard({ track }: TrackProps) {
       .padStart(2, "0");
     return `${m}:${s}`;
   };
+
+  const displayCurrent = draftCurrent ?? current;
 
   return (
     <Card
@@ -107,7 +180,6 @@ export function TrackCard({ track }: TrackProps) {
       }}
     >
       <Group align="flex-start" justify="space-between">
-        {/* Info */}
         <Stack gap={4} style={{ flex: 1 }}>
           <Text fw={600} lineClamp={1}>
             <Anchor component={Link} to={`/tracks/${track.id}`}>
@@ -127,7 +199,6 @@ export function TrackCard({ track }: TrackProps) {
             )}
           </Group>
 
-          {/* Progress + Play */}
           <Group align="center" gap="sm" mt="md">
             <Button size="xs" onClick={togglePlay}>
               {playing ? "Pause" : "Play"}
@@ -135,17 +206,18 @@ export function TrackCard({ track }: TrackProps) {
 
             <Stack gap={2} style={{ flex: 1 }}>
               <Slider
-                value={current}
+                value={displayCurrent}
                 onChange={handleSeek}
+                onChangeEnd={handleSeekEnd}
                 min={0}
-                max={duration || 0}
+                max={duration || 1}
                 step={0.1}
                 label={(v) => formatTime(v)}
               />
 
               <Group justify="space-between">
                 <Text size="xs" c="dimmed">
-                  {formatTime(current)}
+                  {formatTime(displayCurrent)}
                 </Text>
 
                 <Text size="xs" c="dimmed">
@@ -156,7 +228,6 @@ export function TrackCard({ track }: TrackProps) {
           </Group>
         </Stack>
 
-        {/* Volume */}
         <Stack align="center" gap={4}>
           <SpeakerHighIcon size={20} weight="bold" />
 
@@ -173,7 +244,7 @@ export function TrackCard({ track }: TrackProps) {
         </Stack>
       </Group>
 
-      <audio ref={audioRef} src={`${config.api.baseUrl}${track.audio_url}`} />
+      <audio ref={audioRef} key={track.id} src={audioSrc} preload="metadata" />
     </Card>
   );
 }
