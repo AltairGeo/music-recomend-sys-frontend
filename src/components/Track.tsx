@@ -26,10 +26,11 @@ interface TrackProps {
 }
 
 export function TrackCard({ track }: TrackProps) {
-  console.log("TrackCard render", track.id);
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const rafRef = useRef<number | null>(null);
   const seekingRef = useRef(false);
+  const draftRef = useRef<number | null>(null);
 
   const audioSrc = useMemo(
     () => `${config.api.baseUrl}${track.audio_url}`,
@@ -43,17 +44,34 @@ export function TrackCard({ track }: TrackProps) {
   const [current, setCurrent] = useState(0);
   const [draftCurrent, setDraftCurrent] = useState<number | null>(null);
 
+  const displayCurrent =
+    seekingRef.current && draftCurrent != null ? draftCurrent : current;
+
+  // volume sync
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volume / 100;
+  }, [volume]);
+
+  // reset when track changes
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.volume = volume / 100;
-  }, [volume]);
+    audio.pause();
+    audio.currentTime = 0;
+
+    setCurrent(0);
+    setDraftCurrent(null);
+    setPlaying(false);
+    setDuration(0);
+  }, [audioSrc]);
 
   useEffect(() => {
     console.log("TrackCard mounted", track.id);
     return () => console.log("TrackCard unmounted", track.id);
-  }, []);
+  }, [track.id]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -64,10 +82,14 @@ export function TrackCard({ track }: TrackProps) {
     };
 
     const onTime = () => {
-      if (!seekingRef.current && !audio.seeking) {
-        console.log("timeupdate", audio.currentTime);
+      if (seekingRef.current || audio.seeking) return;
+
+      if (rafRef.current != null) return;
+
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
         setCurrent(audio.currentTime);
-      }
+      });
     };
 
     const onSeeking = () => {
@@ -108,6 +130,10 @@ export function TrackCard({ track }: TrackProps) {
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnd);
+
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, []);
 
@@ -117,7 +143,6 @@ export function TrackCard({ track }: TrackProps) {
 
     try {
       if (audio.paused) {
-        audio.volume = volume / 100;
         await audio.play();
       } else {
         audio.pause();
@@ -129,6 +154,7 @@ export function TrackCard({ track }: TrackProps) {
 
   const handleSeek = (value: number) => {
     seekingRef.current = true;
+    draftRef.current = value;
     setDraftCurrent(value);
   };
 
@@ -136,37 +162,29 @@ export function TrackCard({ track }: TrackProps) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    console.log("SEEK start", value, "before:", audio.currentTime);
-
-    const doSeek = () => {
+    const applySeek = () => {
       audio.currentTime = value;
-
-      console.log("SEEK applied", {
-        wanted: value,
-        actual: audio.currentTime,
-      });
-
       setCurrent(value);
       setDraftCurrent(null);
+      seekingRef.current = false;
+      draftRef.current = null;
     };
 
-    if (audio.readyState >= 1) {
-      doSeek();
+    if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      applySeek();
     } else {
-      audio.addEventListener("loadedmetadata", doSeek, { once: true });
+      audio.addEventListener("loadedmetadata", applySeek, { once: true });
     }
   };
 
   const formatTime = (t: number) => {
-    if (!t) return "0:00";
+    if (!Number.isFinite(t)) return "0:00";
     const m = Math.floor(t / 60);
     const s = Math.floor(t % 60)
       .toString()
       .padStart(2, "0");
     return `${m}:${s}`;
   };
-
-  const displayCurrent = draftCurrent ?? current;
 
   return (
     <Card
@@ -210,9 +228,10 @@ export function TrackCard({ track }: TrackProps) {
                 onChange={handleSeek}
                 onChangeEnd={handleSeekEnd}
                 min={0}
-                max={duration || 1}
+                max={duration > 0 ? duration : 0.001}
                 step={0.1}
                 label={(v) => formatTime(v)}
+                disabled={!duration}
               />
 
               <Group justify="space-between">
@@ -244,7 +263,7 @@ export function TrackCard({ track }: TrackProps) {
         </Stack>
       </Group>
 
-      <audio ref={audioRef} key={track.id} src={audioSrc} preload="metadata" />
+      <audio ref={audioRef} src={audioSrc} preload="metadata" />
     </Card>
   );
 }
