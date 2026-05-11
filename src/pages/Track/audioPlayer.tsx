@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ActionIcon, Group, Slider, Stack, Text } from "@mantine/core";
-
+import { Popover } from "@mantine/core";
 import { PauseIcon, PlayIcon, SpeakerHighIcon } from "@phosphor-icons/react";
 
 interface Props {
@@ -29,6 +29,8 @@ export function AudioPlayer({ src }: Props) {
   const [dragging, setDragging] = useState(false);
 
   const [volume, setVolume] = useState(50);
+
+  const [volumeOpened, setVolumeOpened] = useState(false);
 
   // volume sync
   useEffect(() => {
@@ -120,49 +122,78 @@ export function AudioPlayer({ src }: Props) {
   };
 
   return (
-    <Stack gap="xs">
-      <Group wrap="nowrap">
+    <Group gap="xs" style={{ display: "flex" }}>
+      <Group wrap="nowrap" style={{ flex: "1", marginTop: "auto" }}>
         <ActionIcon size="lg" radius="xl" variant="light" onClick={toggle}>
           {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
         </ActionIcon>
 
-        <Slider
-          value={current}
-          onChange={handleSeek}
-          onChangeEnd={handleSeekEnd}
-          min={0}
-          max={duration || 1}
-          step={0.1}
-          flex={1}
-          label={null}
-        />
-
-        <Group gap={6} wrap="nowrap">
-          <SpeakerHighIcon size={18} />
-
+        <div
+          style={{
+            width: "100%",
+            alignItems: "center",
+            verticalAlign: "center",
+          }}
+        >
           <Slider
-            value={volume}
-            onChange={setVolume}
+            value={current}
+            onChange={handleSeek}
+            onChangeEnd={handleSeekEnd}
             min={0}
-            max={100}
-            step={1}
-            w={80}
+            max={duration || 1}
+            step={0.1}
+            flex={1}
             label={null}
           />
-        </Group>
+
+          <Group justify="space-between">
+            <Text size="xs" c="dimmed">
+              {formatTime(current)}
+            </Text>
+
+            <Text size="xs" c="dimmed">
+              {formatTime(duration)}
+            </Text>
+          </Group>
+        </div>
       </Group>
 
-      <Group justify="space-between">
-        <Text size="xs" c="dimmed">
-          {formatTime(current)}
-        </Text>
+      <Popover
+        opened={volumeOpened}
+        onChange={setVolumeOpened}
+        position="top"
+        withArrow
+      >
+        <Popover.Target>
+          <ActionIcon
+            size="lg"
+            radius="xl"
+            variant="light"
+            onClick={() => setVolumeOpened((v) => !v)}
+          >
+            <SpeakerHighIcon size={18} />
+          </ActionIcon>
+        </Popover.Target>
 
-        <Text size="xs" c="dimmed">
-          {formatTime(duration)}
-        </Text>
-      </Group>
+        <Popover.Dropdown>
+          <Popover.Dropdown>
+            <Stack align="center" gap="xs">
+              <Slider
+                orientation="vertical"
+                value={volume}
+                onChange={setVolume}
+                min={0}
+                max={100}
+                step={1}
+                h={100}
+                label={null}
+              />
+            </Stack>
+          </Popover.Dropdown>
+        </Popover.Dropdown>
+      </Popover>
 
       <audio ref={audioRef} src={src} preload="metadata" />
-    </Stack>
+    </Group>
   );
 }

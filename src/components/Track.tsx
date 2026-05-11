@@ -20,7 +20,15 @@ interface Props {
 
 export function TrackCard({ track }: Props) {
   return (
-    <Card withBorder radius="lg" p="lg">
+    <Card
+      withBorder
+      radius="lg"
+      p="lg"
+      style={{
+        background: "linear-gradient(145deg, #1b1b1b, #141414)",
+        borderColor: "#2a2a2a",
+      }}
+    >
       <Stack gap="md">
         <Stack gap={2}>
           <Anchor
