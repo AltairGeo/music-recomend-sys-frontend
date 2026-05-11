@@ -28,7 +28,7 @@ export function AudioPlayer({ src }: Props) {
 
   const [dragging, setDragging] = useState(false);
 
-  const [volume, setVolume] = useState(50);
+  const [volume, setVolume] = useState(30);
 
   const [volumeOpened, setVolumeOpened] = useState(false);
 
@@ -124,8 +124,12 @@ export function AudioPlayer({ src }: Props) {
   return (
     <Group gap="xs" style={{ display: "flex" }}>
       <Group wrap="nowrap" style={{ flex: "1", marginTop: "auto" }}>
-        <ActionIcon size="lg" radius="xl" variant="light" onClick={toggle}>
-          {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+        <ActionIcon size="lg" radius="md" variant="filled" onClick={toggle}>
+          {playing ? (
+            <PauseIcon size={18} weight="bold" />
+          ) : (
+            <PlayIcon weight="bold" size={18} />
+          )}
         </ActionIcon>
 
         <div
@@ -167,11 +171,11 @@ export function AudioPlayer({ src }: Props) {
         <Popover.Target>
           <ActionIcon
             size="lg"
-            radius="xl"
-            variant="light"
+            radius="md"
+            variant="filled"
             onClick={() => setVolumeOpened((v) => !v)}
           >
-            <SpeakerHighIcon size={18} />
+            <SpeakerHighIcon weight="bold" size={18} />
           </ActionIcon>
         </Popover.Target>
 
@@ -187,7 +191,9 @@ export function AudioPlayer({ src }: Props) {
                 step={1}
                 h={100}
                 label={null}
+                style={{ marginLeft: "0.3rem", marginRight: "0.3rem" }}
               />
+              <p>{volume}</p>
             </Stack>
           </Popover.Dropdown>
         </Popover.Dropdown>
