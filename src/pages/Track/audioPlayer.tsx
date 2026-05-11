@@ -1,141 +1,168 @@
 import { useEffect, useRef, useState } from "react";
-import { Group, ActionIcon, Slider, Text } from "@mantine/core";
-import { PlayIcon, PauseIcon, SpeakerHighIcon } from "@phosphor-icons/react";
+import { ActionIcon, Group, Slider, Stack, Text } from "@mantine/core";
 
-export function AudioPlayer({ src }: { src: string }) {
+import { PauseIcon, PlayIcon, SpeakerHighIcon } from "@phosphor-icons/react";
+
+interface Props {
+  src: string;
+}
+
+function formatTime(time: number) {
+  if (!Number.isFinite(time)) return "0:00";
+
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
+}
+
+export function AudioPlayer({ src }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const seekingRef = useRef(false);
-
   const [playing, setPlaying] = useState(false);
-  const [time, setTime] = useState(0);
-  const [draftTime, setDraftTime] = useState<number | null>(null);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(15);
 
+  const [duration, setDuration] = useState(0);
+  const [current, setCurrent] = useState(0);
+
+  const [dragging, setDragging] = useState(false);
+
+  const [volume, setVolume] = useState(50);
+
+  // volume sync
   useEffect(() => {
     const audio = audioRef.current;
+
     if (!audio) return;
 
     audio.volume = volume / 100;
   }, [volume]);
 
+  // audio listeners
   useEffect(() => {
     const audio = audioRef.current;
+
     if (!audio) return;
 
     const onLoaded = () => {
-      setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+      setDuration(audio.duration || 0);
     };
 
     const onTime = () => {
-      if (!seekingRef.current) {
-        setTime(audio.currentTime);
+      if (!dragging) {
+        setCurrent(audio.currentTime);
       }
     };
 
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
 
-    const onEnd = () => {
-      seekingRef.current = false;
+    const onEnded = () => {
       setPlaying(false);
-      setTime(0);
-      setDraftTime(null);
+      setCurrent(0);
     };
 
     audio.addEventListener("loadedmetadata", onLoaded);
-    audio.addEventListener("durationchange", onLoaded);
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
-    audio.addEventListener("ended", onEnd);
+    audio.addEventListener("ended", onEnded);
 
     return () => {
       audio.removeEventListener("loadedmetadata", onLoaded);
-      audio.removeEventListener("durationchange", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("ended", onEnd);
+      audio.removeEventListener("ended", onEnded);
     };
-  }, []);
+  }, [dragging]);
+
+  // reset when src changes
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+
+    setPlaying(false);
+    setCurrent(0);
+  }, [src]);
 
   const toggle = async () => {
     const audio = audioRef.current;
+
     if (!audio) return;
 
-    try {
-      if (audio.paused) {
-        await audio.play();
-      } else {
-        audio.pause();
-      }
-    } catch (e) {
-      console.error("Audio play error:", e);
-    }
-  };
-
-  const beginSeek = () => {
-    seekingRef.current = true;
-  };
-
-  const seek = (value: number) => {
-    setDraftTime(value);
-  };
-
-  const seekEnd = (value: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const doSeek = () => {
-      audio.currentTime = value;
-      setTime(value);
-    };
-
-    if (audio.readyState >= 1) {
-      doSeek();
+    if (audio.paused) {
+      await audio.play();
     } else {
-      audio.addEventListener("loadedmetadata", doSeek, { once: true });
+      audio.pause();
     }
   };
 
-  const currentValue = draftTime ?? time;
+  const handleSeek = (value: number) => {
+    setDragging(true);
+    setCurrent(value);
+  };
+
+  const handleSeekEnd = (value: number) => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
+    audio.currentTime = value;
+
+    setCurrent(value);
+    setDragging(false);
+  };
 
   return (
-    <Group gap="md" align="center">
-      <ActionIcon size="lg" onClick={toggle}>
-        {playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
-      </ActionIcon>
+    <Stack gap="xs">
+      <Group wrap="nowrap">
+        <ActionIcon size="lg" radius="xl" variant="light" onClick={toggle}>
+          {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+        </ActionIcon>
 
-      <Slider
-        value={currentValue}
-        onPointerDown={beginSeek}
-        onMouseDown={beginSeek}
-        onTouchStart={beginSeek}
-        onChange={seek}
-        onChangeEnd={seekEnd}
-        max={duration || 1}
-        style={{ flex: 1 }}
-        label={(v) => `${Math.floor(v)}s`}
-      />
-
-      <Text size="sm" c="dimmed" w={110}>
-        {Math.floor(currentValue)}s / {Math.floor(duration)}s
-      </Text>
-
-      <Group gap={6} align="center">
-        <SpeakerHighIcon size={20} />
         <Slider
-          value={volume}
-          onChange={(v) => setVolume(v)}
-          w={100}
+          value={current}
+          onChange={handleSeek}
+          onChangeEnd={handleSeekEnd}
           min={0}
-          max={100}
+          max={duration || 1}
+          step={0.1}
+          flex={1}
+          label={null}
         />
+
+        <Group gap={6} wrap="nowrap">
+          <SpeakerHighIcon size={18} />
+
+          <Slider
+            value={volume}
+            onChange={setVolume}
+            min={0}
+            max={100}
+            step={1}
+            w={80}
+            label={null}
+          />
+        </Group>
+      </Group>
+
+      <Group justify="space-between">
+        <Text size="xs" c="dimmed">
+          {formatTime(current)}
+        </Text>
+
+        <Text size="xs" c="dimmed">
+          {formatTime(duration)}
+        </Text>
       </Group>
 
       <audio ref={audioRef} src={src} preload="metadata" />
-    </Group>
+    </Stack>
   );
 }
